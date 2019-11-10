@@ -11,10 +11,13 @@ import org.apache.deltaspike.core.spi.config.ConfigSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * An Apache DeltaSpike <code>ConfigSource</code> implementation for etcd.
+ *
  * @author Jason Hallford
  */
 public class EtcdConfigSource implements ConfigSource, AutoCloseable {
@@ -216,8 +219,14 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     }
 
     // AutoCloseable
+
+    /**
+     * Closes the encapsulated KV store client.
+     *
+     * @throws IOException If the client connection cannot be closed.
+     */
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         LOGGER.debug("Closing KV store client.");
         this.kvStoreClient.close();
     }

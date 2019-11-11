@@ -6,7 +6,7 @@
 
     <groupId>net.ghettopalace</groupId>
     <artifactId>EtcdConfigSource</artifactId>
-    <version>0.1</version>
+    <version>0.3</version>
 
     <properties>
         <!-- Plug-in versions -->
@@ -83,6 +83,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
+                <configuration>
+                    <classpathDependencyExcludes>
+                        <classpathDependencyExclude>META-INF/services/**</classpathDependencyExclude>
+                    </classpathDependencyExcludes>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>

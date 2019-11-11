@@ -11,6 +11,7 @@
     <properties>
         <!-- Plug-in versions -->
         <failsafe.version>2.22.2</failsafe.version>
+        <surefire.version>2.22.2</surefire.version>
 
         <!-- Dependency versions -->
         <deltaspike.version>1.9.1</deltaspike.version>
@@ -77,6 +78,11 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>

@@ -1,4 +1,4 @@
-package net.ghettopalace.etcd;
+package io.miscellanea.etcd;
 
 import com.google.common.base.Strings;
 import com.google.protobuf.ByteString;
@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.WatchEvent;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,15 +67,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
 
     // Constants
     private static final String SOURCE_NAME = "Etcd Config Source";
-    private static final String ETCD_HOST_PROP = "etcd.endpoint.host";
-    private static final String ETCD_PORT_PROP = "etcd.endpoint.port";
-    private static final String ETCD_USER_PROP = "etcd.endpoint.user";
-    private static final String ETCD_PASSWORD_PROP = "etcd.endpoint.password";
     private static final String ORDINAL_PROP = "etcd.cs.ordinal";
-    private static final String WATCH_PROPS_PROP = "etcd.cs.watch";
-
-    private static final int DEFAULT_ORDINAL = 1000;
-    private static final int DEFAULT_PORT = 2379;
 
     // Fields
     private static final Logger LOGGER = LoggerFactory.getLogger(EtcdConfigSource.class);
@@ -86,9 +77,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     private final WatchObserver watchObserver = new WatchObserver();
 
     private int ordinal = 0;
-    private String host;
-    private int port;
-    private boolean watch;
+    private EtcdConfiguration etcdConfiguration = new EnvironmentEtcdConfiguration();
     private KvStoreClient kvStoreClient;
 
     // Constructors
@@ -103,24 +92,17 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
      * </ul>
      */
     public EtcdConfigSource() {
-        this.host = ConfigResolver.getPropertyValue(ETCD_HOST_PROP);
-        this.port = this.resolveEtcdPort();
-        this.watch = this.resolveWatchProperty();
-
-        String user = ConfigResolver.getPropertyValue(ETCD_USER_PROP);
-        String password = ConfigResolver.getPropertyValue(ETCD_PASSWORD_PROP);
-        LOGGER.debug("etcd host = {}, etcd port = {}, etcd user = {}, etcd password = {}", this.host, this.port, user, password);
-
-        if (this.host != null && (this.port != 0)) {
-            if (Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(password)) {
+        if (this.etcdConfiguration.getHost() != null && (this.etcdConfiguration.getPort() != 0)) {
+            if (Strings.isNullOrEmpty(this.etcdConfiguration.getUser()) ||
+                    Strings.isNullOrEmpty(this.etcdConfiguration.getPassword())) {
                 LOGGER.debug("Creating etcd KV store client without credentials.");
-                this.kvStoreClient = EtcdClient.forEndpoint(this.host, this.port)
+                this.kvStoreClient = EtcdClient.forEndpoint(this.etcdConfiguration.getHost(), this.etcdConfiguration.getPort())
                         .withPlainText()
                         .build();
             } else {
                 LOGGER.debug("Creating etcd KV store client with credentials.");
-                this.kvStoreClient = EtcdClient.forEndpoint(this.host, this.port)
-                        .withCredentials(user, password)
+                this.kvStoreClient = EtcdClient.forEndpoint(this.etcdConfiguration.getHost(), this.etcdConfiguration.getPort())
+                        .withCredentials(this.etcdConfiguration.getUser(), this.etcdConfiguration.getPassword())
                         .withPlainText()
                         .build();
             }
@@ -132,21 +114,19 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     /**
      * Constructor for unit testing or non-framework usage.
      *
-     * @param host     The name of the node hosting the etcd server.
-     * @param port     The etcd server's TCP port.
+     * @param etcdConfiguration  An initialized configuration loader.
      * @param kvClient An intialized <code>KvStoreClient</code> instance.
      */
-    public EtcdConfigSource(String host, int port, KvStoreClient kvClient) {
+    public EtcdConfigSource(EtcdConfiguration etcdConfiguration, KvStoreClient kvClient) {
+        if (etcdConfiguration == null) {
+            throw new IllegalArgumentException("configurationLoader must not be null.");
+        }
+
         if (kvClient == null) {
             throw new IllegalArgumentException("kvClient must not be null.");
         }
 
-        if (Strings.isNullOrEmpty(host)) {
-            throw new IllegalArgumentException("host must not be null.");
-        }
-
-        this.host = host;
-        this.port = port;
+        this.etcdConfiguration = etcdConfiguration;
         this.kvStoreClient = kvClient;
     }
 
@@ -158,7 +138,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
      * @return The host name.
      */
     public String getHost() {
-        return this.host;
+        return this.etcdConfiguration.getHost();
     }
 
     /**
@@ -167,49 +147,10 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
      * @return The TCP port.
      */
     public int getPort() {
-        return this.port;
+        return this.etcdConfiguration.getPort();
     }
 
     // Private methods
-
-    /**
-     * Resolves the etcd server's TCP port using DeltaSpike's configuration
-     * mechanism. To set the port, define the <code>etcd.endpoint.port</code>
-     * property and set it to an integer value. If not set, the value defaults
-     * to <code>2379</code>.
-     *
-     * @return The server's TCP port.
-     */
-    private int resolveEtcdPort() {
-        String strPort = ConfigResolver.getPropertyValue(ETCD_PORT_PROP);
-        int port = DEFAULT_PORT;
-
-        if (!Strings.isNullOrEmpty(strPort)) {
-            try {
-                port = Integer.parseInt(strPort);
-            } catch (Exception e) {
-                LOGGER.warn("Unable to convert configured value to an integer ({}); using default value ({}).", e.getMessage(), port);
-            }
-        } else {
-            LOGGER.info("Using default etcd port {}.", port);
-        }
-
-        return port;
-    }
-
-    private boolean resolveWatchProperty(){
-        boolean doWatch = false;
-
-        String strWatch = ConfigResolver.getPropertyValue(WATCH_PROPS_PROP);
-        if (!Strings.isNullOrEmpty(strWatch)) {
-            doWatch = Boolean.parseBoolean(strWatch);
-        }
-
-        LOGGER.info("Config source {} watch for property changes.",doWatch ? "will" : "will not");
-
-        return doWatch;
-    }
-
     private void cacheValue(String key, String value) {
         synchronized (this.valueCache) {
             this.valueCache.put(key, value);
@@ -231,7 +172,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     }
 
     private void removeCachedValue(String key) {
-        LOGGER.debug("Removing value for key '{}' from cache.");
+        LOGGER.debug("Removing value for key ''{}'' from cache.");
 
         synchronized (this.valueCache) {
             this.valueCache.remove(key);
@@ -239,7 +180,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     }
 
     private void addWatch(KvClient client, ByteString etcdKey) {
-        if( this.watch) {
+        if (this.etcdConfiguration.isWatching()) {
             this.removeWatch(etcdKey);
             synchronized (this.activeWatches) {
                 KvClient.Watch watch = client.watch(etcdKey).start(watchObserver);
@@ -250,7 +191,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     }
 
     private void removeWatch(ByteString etcdKey) {
-        if( this.watch ) {
+        if (this.etcdConfiguration.isWatching()) {
             synchronized (this.activeWatches) {
                 if (this.activeWatches.containsKey(etcdKey)) {
                     LOGGER.debug("Closing current watch for '{}' and removing from map.", etcdKey.toStringUtf8());
@@ -273,18 +214,21 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
                     try {
                         this.ordinal = Integer.parseInt(strOrdinal);
                     } catch (Exception e) {
-                        LOGGER.warn("Unable to convert ordinal '{}' to an integer; using default value {}.", strOrdinal, DEFAULT_ORDINAL);
+                        LOGGER.warn("Unable to convert ordinal '{}' to an integer; using default value {}.", strOrdinal,
+                                Constants.DEFAULT_ORDINAL);
                     }
                 } else {
-                    LOGGER.info("Ordinal property {} not set; using default value {}.", ORDINAL_PROP, DEFAULT_ORDINAL);
+                    LOGGER.info("Ordinal property {} not set; using default value {}.", ORDINAL_PROP,
+                            Constants.DEFAULT_ORDINAL);
                 }
             } catch (Exception e) {
-                LOGGER.info("Unable to resolve ordinal property '{}'; using default value {}.", ORDINAL_PROP, DEFAULT_ORDINAL);
+                LOGGER.info("Unable to resolve ordinal property '{}'; using default value {}.", ORDINAL_PROP,
+                        Constants.DEFAULT_ORDINAL);
             }
         }
 
         if (this.ordinal == 0) {
-            this.ordinal = DEFAULT_ORDINAL;
+            this.ordinal = Constants.DEFAULT_ORDINAL;
         }
 
         LOGGER.debug("Configuration source is using ordinal value '{}'.", this.ordinal);
@@ -351,7 +295,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
      */
     @Override
     public void close() throws IOException {
-        if (this.watch && this.activeWatches.size() > 0) {
+        if (this.etcdConfiguration.isWatching() && this.activeWatches.size() > 0) {
             LOGGER.debug("Closing all active watches.");
             for (KvClient.Watch watch : this.activeWatches.values()) {
                 try {
@@ -366,7 +310,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
         try {
             this.kvStoreClient.close();
         } catch (Exception e) {
-            LOGGER.info("Error closing KV Store client: ",e.getMessage());
+            LOGGER.info("Error closing KV Store client: ", e.getMessage());
         }
     }
 }

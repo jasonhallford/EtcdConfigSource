@@ -6,7 +6,7 @@
 
     <groupId>net.ghettopalace</groupId>
     <artifactId>EtcdConfigSource</artifactId>
-    <version>0.3</version>
+    <version>0.4</version>
 
     <properties>
         <!-- Plug-in versions -->

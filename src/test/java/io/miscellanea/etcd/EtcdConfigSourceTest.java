@@ -1,4 +1,4 @@
-package net.ghettopalace.etcd;
+package io.miscellanea.etcd;
 
 import com.google.protobuf.ByteString;
 import com.ibm.etcd.api.KeyValue;
@@ -15,15 +15,19 @@ import static org.mockito.Mockito.when;
 
 class EtcdConfigSourceTest {
     // Constants
-    private static final String TEST_KEY = "this/known/property";
+    private static final String TEST_KEY = "this.known.property";
     private static final ByteString TEST_KEY_AS_BYTES = ByteString.copyFromUtf8(TEST_KEY);
 
     // Tests
     @Test
     @DisplayName("ConfigSource throws on null KvStoreClient")
     void testExceptionOnNullKvStoreClient() {
+        EtcdConfiguration loader = mock(EtcdConfiguration.class);
+        when(loader.getHost()).thenReturn("localhost");
+        when(loader.getPort()).thenReturn(4001);
+
         Throwable exception = assertThrows(IllegalArgumentException.class, () ->
-                new EtcdConfigSource("localhost",4001,null));
+                new EtcdConfigSource(loader,null));
 
         assertThat(exception).isExactlyInstanceOf(IllegalArgumentException.class);
         assertThat(exception.getMessage()).contains("kvClient")
@@ -32,13 +36,13 @@ class EtcdConfigSourceTest {
     }
 
     @Test
-    @DisplayName("ConfigSource throws on null KvStoreClient")
+    @DisplayName("ConfigSource throws on null Configuration Loader")
     void testExceptionOnNullHost() {
         Throwable exception = assertThrows(IllegalArgumentException.class, () ->
-                new EtcdConfigSource(null,4001,mock(KvStoreClient.class)));
+                new EtcdConfigSource(null,mock(KvStoreClient.class)));
 
         assertThat(exception).isExactlyInstanceOf(IllegalArgumentException.class);
-        assertThat(exception.getMessage()).contains("host")
+        assertThat(exception.getMessage()).contains("configurationLoader")
                 .contains("must not")
                 .contains("null");
     }
@@ -65,7 +69,11 @@ class EtcdConfigSourceTest {
         KvStoreClient storeClient = mock(KvStoreClient.class);
         when(storeClient.getKvClient()).thenReturn(client);
 
-        EtcdConfigSource configSource = new EtcdConfigSource("localhost",4001,storeClient);
+        EtcdConfiguration loader = mock(EtcdConfiguration.class);
+        when(loader.getHost()).thenReturn("localhost");
+        when(loader.getPort()).thenReturn(4001);
+
+        EtcdConfigSource configSource = new EtcdConfigSource(loader,storeClient);
         String value = configSource.getPropertyValue(TEST_KEY);
 
         assertThat(value).isNotNull();
@@ -89,7 +97,11 @@ class EtcdConfigSourceTest {
         KvStoreClient storeClient = mock(KvStoreClient.class);
         when(storeClient.getKvClient()).thenReturn(client);
 
-        EtcdConfigSource configSource = new EtcdConfigSource("localhost",4001,storeClient);
+        EtcdConfiguration loader = mock(EtcdConfiguration.class);
+        when(loader.getHost()).thenReturn("localhost");
+        when(loader.getPort()).thenReturn(4001);
+
+        EtcdConfigSource configSource = new EtcdConfigSource(loader,storeClient);
         String value = configSource.getPropertyValue(TEST_KEY);
 
         assertThat(value).isNull();

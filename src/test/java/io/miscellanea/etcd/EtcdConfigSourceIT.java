@@ -1,4 +1,4 @@
-package net.ghettopalace.etcd;
+package io.miscellanea.etcd;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -6,6 +6,7 @@ import com.google.protobuf.ByteString;
 import com.ibm.etcd.client.EtcdClient;
 import com.ibm.etcd.client.KvStoreClient;
 import com.ibm.etcd.client.kv.KvClient;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,30 +18,15 @@ class EtcdConfigSourceIT {
     private static final String TEST_KEY = "test.key";
     private static final String TEST_VALUE = "IT Value";
     private static final String CHANGED_TEST_VALUE = "Changed IT Value";
-    private static final String ETCD_ENDPOINT_HOST_PROPERTY = "etcd.endpoint.host";
-    private static final String ETCD_ENDPOINT_PORT_PROPERTY = "etcd.endpoint.port";
-    private static final String ETCD_USER_PROP = "etcd.endpoint.user";
-    private static final String ETCD_PASSWORD_PROP = "etcd.endpoint.password";
     private static final String ETCD_USER = "root";
     private static final String ETCD_PASSWORD = "Passw0rd";
-    public static final String ETCD_CS_WATCH_PROP = "etcd.cs.watch";
 
     // Tests
     @BeforeAll
     static void initializeTests() throws Exception {
-        System.setProperty(ETCD_ENDPOINT_HOST_PROPERTY, ETCD_HOST);
-        System.setProperty(ETCD_ENDPOINT_PORT_PROPERTY, ETCD_PORT);
-        System.setProperty(ETCD_CS_WATCH_PROP, "");
-
-        // Create test key(s)
-        try (KvStoreClient kvStoreClient = EtcdClient.forEndpoint(ETCD_HOST, Integer.parseInt(ETCD_PORT))
-                .withCredentials(ETCD_USER, ETCD_PASSWORD)
-                .withPlainText()
-                .build()) {
-
-            KvClient client = kvStoreClient.getKvClient();
-            client.put(ByteString.copyFromUtf8(TEST_KEY), ByteString.copyFromUtf8(TEST_VALUE)).sync();
-        }
+        System.setProperty(Constants.ETCD_HOST_PROP, ETCD_HOST);
+        System.setProperty(Constants.ETCD_PORT_PROP, ETCD_PORT);
+        System.setProperty(Constants.ETCD_WATCHING_PROP, "");
     }
 
 
@@ -69,8 +55,8 @@ class EtcdConfigSourceIT {
     @Test
     @DisplayName("Read a Configuration Value without Username or Password")
     void readConfigurationValueWithoutUsernameOrPassword() throws Exception {
-        System.setProperty(ETCD_USER_PROP, "");
-        System.setProperty(ETCD_PASSWORD_PROP, "");
+        System.setProperty(Constants.ETCD_USER_PROP, "");
+        System.setProperty(Constants.ETCD_PASSWORD_PROP, "");
 
         try (EtcdConfigSource source = new EtcdConfigSource()) {
             String value = source.getPropertyValue(TEST_KEY);
@@ -81,8 +67,10 @@ class EtcdConfigSourceIT {
     @Test
     @DisplayName("Read a Configuration Value")
     void readConfigurationValue() throws Exception {
-        System.setProperty(ETCD_USER_PROP, ETCD_USER);
-        System.setProperty(ETCD_PASSWORD_PROP, ETCD_PASSWORD);
+        System.setProperty(Constants.ETCD_USER_PROP, ETCD_USER);
+        System.setProperty(Constants.ETCD_PASSWORD_PROP, ETCD_PASSWORD);
+
+        this.setKeyValue(TEST_KEY,TEST_VALUE);
 
         try (EtcdConfigSource source = new EtcdConfigSource()) {
             String value = source.getPropertyValue(TEST_KEY);
@@ -94,23 +82,18 @@ class EtcdConfigSourceIT {
     @Test
     @DisplayName("Read Changed Configuration Value")
     void readChangedConfigurationValue() throws Exception {
-        System.setProperty(ETCD_USER_PROP, ETCD_USER);
-        System.setProperty(ETCD_PASSWORD_PROP, ETCD_PASSWORD);
-        System.setProperty(ETCD_CS_WATCH_PROP, "true");
+        System.setProperty(Constants.ETCD_USER_PROP, ETCD_USER);
+        System.setProperty(Constants.ETCD_PASSWORD_PROP, ETCD_PASSWORD);
+        System.setProperty(Constants.ETCD_WATCHING_PROP, "true");
+
+        this.setKeyValue(TEST_KEY,TEST_VALUE);
 
         try (EtcdConfigSource source = new EtcdConfigSource()) {
             String value = source.getPropertyValue(TEST_KEY);
             assertThat(value).isNotNull()
                     .isEqualTo(TEST_VALUE);
 
-            try (KvStoreClient kvStoreClient = EtcdClient.forEndpoint(ETCD_HOST, Integer.parseInt(ETCD_PORT))
-                    .withCredentials(ETCD_USER, ETCD_PASSWORD)
-                    .withPlainText()
-                    .build()) {
-
-                KvClient client = kvStoreClient.getKvClient();
-                client.put(ByteString.copyFromUtf8(TEST_KEY), ByteString.copyFromUtf8(CHANGED_TEST_VALUE)).sync();
-            }
+            this.setKeyValue(TEST_KEY,CHANGED_TEST_VALUE);
 
             // Sleep for 5 seconds; watches are process asynchronously
             Thread.sleep(5000);
@@ -124,22 +107,17 @@ class EtcdConfigSourceIT {
     @Test
     @DisplayName("Ignore Changed Configuration Value")
     void ignoreChangedConfigurationValue() throws Exception {
-        System.setProperty(ETCD_USER_PROP, ETCD_USER);
-        System.setProperty(ETCD_PASSWORD_PROP, ETCD_PASSWORD);
+        System.setProperty(Constants.ETCD_USER_PROP, ETCD_USER);
+        System.setProperty(Constants.ETCD_PASSWORD_PROP, ETCD_PASSWORD);
+
+        this.setKeyValue(TEST_KEY,TEST_VALUE);
 
         try (EtcdConfigSource source = new EtcdConfigSource()) {
             String value = source.getPropertyValue(TEST_KEY);
             assertThat(value).isNotNull()
                     .isEqualTo(TEST_VALUE);
 
-            try (KvStoreClient kvStoreClient = EtcdClient.forEndpoint(ETCD_HOST, Integer.parseInt(ETCD_PORT))
-                    .withCredentials(ETCD_USER, ETCD_PASSWORD)
-                    .withPlainText()
-                    .build()) {
-
-                KvClient client = kvStoreClient.getKvClient();
-                client.put(ByteString.copyFromUtf8(TEST_KEY), ByteString.copyFromUtf8(CHANGED_TEST_VALUE)).sync();
-            }
+            this.setKeyValue(TEST_KEY,CHANGED_TEST_VALUE);
 
             // Sleep for 5 seconds; watches are process asynchronously
             Thread.sleep(5000);
@@ -147,6 +125,20 @@ class EtcdConfigSourceIT {
             value = source.getPropertyValue(TEST_KEY);
             assertThat(value).isNotNull()
                     .isEqualTo(TEST_VALUE);
+        }
+    }
+
+    // Utility methods
+    private void setKeyValue(String key, String value){
+        try (KvStoreClient kvStoreClient = EtcdClient.forEndpoint(ETCD_HOST, Integer.parseInt(ETCD_PORT))
+                .withCredentials(ETCD_USER, ETCD_PASSWORD)
+                .withPlainText()
+                .build()) {
+
+            KvClient client = kvStoreClient.getKvClient();
+            client.put(ByteString.copyFromUtf8(key), ByteString.copyFromUtf8(value)).sync();
+        } catch (Exception e){
+            fail("Unable to set value '" + value + "' for key '" + key + "'. Reason: " + e.getMessage());
         }
     }
 }

@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.ghettopalace</groupId>
+    <groupId>io.miscellanea</groupId>
     <artifactId>EtcdConfigSource</artifactId>
-    <version>0.4</version>
+    <version>0.5</version>
 
     <properties>
         <!-- Plug-in versions -->
@@ -103,5 +103,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub jasonhallford Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/jasonhallford/EtcdConfigSource</url>
+        </repository>
+    </distributionManagement>
 
 </project>

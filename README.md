@@ -7,9 +7,17 @@ You may build this project using [Maven 3.5+](https://maven.apache.org/) and Ope
 the [AdoptOpenJDK](https://adoptopenjdk.net/) project.
 
 First, you'll need to clone the repo:
-```
+```pwsh
 git clone https://github.com/jasonhallford/EtcdConfigSource.git
 ```
+
+Then build with Maven:
+```pwsh
+mvn install -DskipITs
+```
+
+Here, <code>-DskipITs</code> is used to disable integration tests. You may run them, of course, but you'll need to 
+configure a local **etcd** instance first. 
 
 If you prefer an IDE, I recommend [IntelliJ IDEA](https://www.jetbrains.com/idea/)'s Community Edition, although any
 idea with Maven support should suffice.

@@ -11,6 +11,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Integration test suite for {@code EtcdConfigSource}.
+ */
 class EtcdConfigSourceIT {
     // Constants
     private static final String ETCD_HOST = "localhost";

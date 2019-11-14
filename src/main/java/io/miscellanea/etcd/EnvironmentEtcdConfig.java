@@ -10,23 +10,25 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jason Hallford
  */
-class EnvironmentEtcdConfiguration implements EtcdConfiguration {
+class EnvironmentEtcdConfig implements EtcdConfig {
     // Fields
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnvironmentEtcdConfiguration.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnvironmentEtcdConfig.class);
 
     private String host;
-    private int port;
+    private Integer port;
     private String user;
     private String password;
-    private boolean watching;
+    private Boolean watching;
+    private Integer ordinal;
 
     // Constructors
-    public EnvironmentEtcdConfiguration() {
+    public EnvironmentEtcdConfig() {
         this.host = System.getProperty(Constants.ETCD_HOST_PROP);
         this.port = this.resolvePort();
         this.watching = this.resolveWatching();
         this.user = System.getProperty(Constants.ETCD_USER_PROP);
         this.password = System.getProperty(Constants.ETCD_PASSWORD_PROP);
+        this.ordinal = this.resolveOrdinal();
 
         LOGGER.debug("etcd host = {}, etcd port = {}, etcd user = {}, etcd password = {}", this.host, this.port, this.user, password);
     }
@@ -38,7 +40,7 @@ class EnvironmentEtcdConfiguration implements EtcdConfiguration {
     }
 
     @Override
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
@@ -53,14 +55,17 @@ class EnvironmentEtcdConfiguration implements EtcdConfiguration {
     }
 
     @Override
-    public boolean isWatching() {
+    public Boolean isWatching() {
         return watching;
     }
 
+    @Override
+    public Integer getOrdinal() { return ordinal; }
+
     // Private methods
-    private int resolvePort() {
+    private Integer resolvePort() {
+        Integer port = null;
         String strPort = System.getProperty(Constants.ETCD_PORT_PROP);
-        int port = Constants.DEFAULT_PORT;
 
         if (!Strings.isNullOrEmpty(strPort)) {
             try {
@@ -69,21 +74,40 @@ class EnvironmentEtcdConfiguration implements EtcdConfiguration {
                 LOGGER.warn("Unable to convert configured value to an integer ({}); using default value ({}).", e.getMessage(), port);
             }
         } else {
-            LOGGER.info("Using default etcd port {}.", port);
+            LOGGER.info("Property {} is not defined.", Constants.ETCD_PORT_PROP);
         }
 
         return port;
     }
 
-    private boolean resolveWatching() {
-        boolean doWatch = false;
+    private Integer resolveOrdinal() {
+        Integer ordinal = null;
+        String strOrdinal = System.getProperty(Constants.ORDINAL_PROP);
+
+        if (!Strings.isNullOrEmpty(strOrdinal)) {
+            try {
+                ordinal = Integer.parseInt(strOrdinal);
+            } catch (Exception e) {
+                LOGGER.warn("Unable to convert configured value to an integer ({}); using default value ({}).", e.getMessage(), ordinal);
+            }
+        } else {
+            LOGGER.info("Property {} is not defined.", Constants.ORDINAL_PROP);
+        }
+
+        return ordinal;
+    }
+
+    private Boolean resolveWatching() {
+        Boolean doWatch = null;
 
         String strWatch = ConfigResolver.getPropertyValue(Constants.ETCD_WATCHING_PROP);
         if (!Strings.isNullOrEmpty(strWatch)) {
             doWatch = Boolean.parseBoolean(strWatch);
+        } else {
+            LOGGER.debug("Property {} is not defined.");
         }
 
-        LOGGER.info("Config source {} watch for property changes.", doWatch ? "will" : "will not");
+        LOGGER.info("doWatch = {}",doWatch);
 
         return doWatch;
     }

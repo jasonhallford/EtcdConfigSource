@@ -77,7 +77,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     private final WatchObserver watchObserver = new WatchObserver();
 
     private int ordinal = 0;
-    private EtcdConfiguration etcdConfiguration = new EnvironmentEtcdConfiguration();
+    private EtcdConfig etcdConfig = new CompositeEtcdConfig();
     private KvStoreClient kvStoreClient;
 
     // Constructors
@@ -92,17 +92,17 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
      * </ul>
      */
     public EtcdConfigSource() {
-        if (this.etcdConfiguration.getHost() != null && (this.etcdConfiguration.getPort() != 0)) {
-            if (Strings.isNullOrEmpty(this.etcdConfiguration.getUser()) ||
-                    Strings.isNullOrEmpty(this.etcdConfiguration.getPassword())) {
+        if (this.etcdConfig.getHost() != null && (this.etcdConfig.getPort() != 0)) {
+            if (Strings.isNullOrEmpty(this.etcdConfig.getUser()) ||
+                    Strings.isNullOrEmpty(this.etcdConfig.getPassword())) {
                 LOGGER.debug("Creating etcd KV store client without credentials.");
-                this.kvStoreClient = EtcdClient.forEndpoint(this.etcdConfiguration.getHost(), this.etcdConfiguration.getPort())
+                this.kvStoreClient = EtcdClient.forEndpoint(this.etcdConfig.getHost(), this.etcdConfig.getPort())
                         .withPlainText()
                         .build();
             } else {
                 LOGGER.debug("Creating etcd KV store client with credentials.");
-                this.kvStoreClient = EtcdClient.forEndpoint(this.etcdConfiguration.getHost(), this.etcdConfiguration.getPort())
-                        .withCredentials(this.etcdConfiguration.getUser(), this.etcdConfiguration.getPassword())
+                this.kvStoreClient = EtcdClient.forEndpoint(this.etcdConfig.getHost(), this.etcdConfig.getPort())
+                        .withCredentials(this.etcdConfig.getUser(), this.etcdConfig.getPassword())
                         .withPlainText()
                         .build();
             }
@@ -114,11 +114,11 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     /**
      * Constructor for unit testing or non-framework usage.
      *
-     * @param etcdConfiguration  An initialized configuration loader.
+     * @param etcdConfig  An initialized configuration loader.
      * @param kvClient An intialized <code>KvStoreClient</code> instance.
      */
-    public EtcdConfigSource(EtcdConfiguration etcdConfiguration, KvStoreClient kvClient) {
-        if (etcdConfiguration == null) {
+    public EtcdConfigSource(EtcdConfig etcdConfig, KvStoreClient kvClient) {
+        if (etcdConfig == null) {
             throw new IllegalArgumentException("configurationLoader must not be null.");
         }
 
@@ -126,7 +126,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
             throw new IllegalArgumentException("kvClient must not be null.");
         }
 
-        this.etcdConfiguration = etcdConfiguration;
+        this.etcdConfig = etcdConfig;
         this.kvStoreClient = kvClient;
     }
 
@@ -138,7 +138,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
      * @return The host name.
      */
     public String getHost() {
-        return this.etcdConfiguration.getHost();
+        return this.etcdConfig.getHost();
     }
 
     /**
@@ -147,7 +147,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
      * @return The TCP port.
      */
     public int getPort() {
-        return this.etcdConfiguration.getPort();
+        return this.etcdConfig.getPort();
     }
 
     // Private methods
@@ -180,7 +180,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     }
 
     private void addWatch(KvClient client, ByteString etcdKey) {
-        if (this.etcdConfiguration.isWatching()) {
+        if (this.etcdConfig.isWatching()) {
             this.removeWatch(etcdKey);
             synchronized (this.activeWatches) {
                 KvClient.Watch watch = client.watch(etcdKey).start(watchObserver);
@@ -191,7 +191,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     }
 
     private void removeWatch(ByteString etcdKey) {
-        if (this.etcdConfiguration.isWatching()) {
+        if (this.etcdConfig.isWatching()) {
             synchronized (this.activeWatches) {
                 if (this.activeWatches.containsKey(etcdKey)) {
                     LOGGER.debug("Closing current watch for '{}' and removing from map.", etcdKey.toStringUtf8());
@@ -295,7 +295,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
      */
     @Override
     public void close() throws IOException {
-        if (this.etcdConfiguration.isWatching() && this.activeWatches.size() > 0) {
+        if (this.etcdConfig.isWatching() && this.activeWatches.size() > 0) {
             LOGGER.debug("Closing all active watches.");
             for (KvClient.Watch watch : this.activeWatches.values()) {
                 try {

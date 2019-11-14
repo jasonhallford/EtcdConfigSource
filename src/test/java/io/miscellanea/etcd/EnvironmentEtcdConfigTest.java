@@ -4,7 +4,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
-public class EnvironmentEtcdConfigurationTest {
+/**
+ * Unit test suite for {@code EnvironmentEtcdConfig}.
+ */
+public class EnvironmentEtcdConfigTest {
     // Tests
     @Test
     @DisplayName("All Values Read from System Properties")
@@ -15,7 +18,7 @@ public class EnvironmentEtcdConfigurationTest {
         System.setProperty(Constants.ETCD_PORT_PROP,"9999");
         System.setProperty(Constants.ETCD_WATCHING_PROP,"true");
 
-        EtcdConfiguration configuration = new EnvironmentEtcdConfiguration();
+        EtcdConfig configuration = new EnvironmentEtcdConfig();
 
         assertThat(configuration.getHost()).isNotNull().isEqualTo("myHost");
         assertThat(configuration.getPort()).isEqualTo(9999);
@@ -25,22 +28,22 @@ public class EnvironmentEtcdConfigurationTest {
     }
 
     @Test
-    @DisplayName("IsWatching Can be False")
-    void isWatchingCanBeFalse(){
+    @DisplayName("IsWatching Can be Null and False")
+    void isWatchingCanBeNullAndFalse(){
         System.setProperty(Constants.ETCD_WATCHING_PROP,"");
-        EtcdConfiguration configuration = new EnvironmentEtcdConfiguration();
-        assertThat(configuration.isWatching()).isFalse();
+        EtcdConfig configuration = new EnvironmentEtcdConfig();
+        assertThat(configuration.isWatching()).isNull();
 
         System.setProperty(Constants.ETCD_WATCHING_PROP,"false");
-        configuration = new EnvironmentEtcdConfiguration();
+        configuration = new EnvironmentEtcdConfig();
         assertThat(configuration.isWatching()).isFalse();
 
         System.setProperty(Constants.ETCD_WATCHING_PROP,"nonsense value");
-        configuration = new EnvironmentEtcdConfiguration();
+        configuration = new EnvironmentEtcdConfig();
         assertThat(configuration.isWatching()).isFalse();
 
         System.setProperty(Constants.ETCD_WATCHING_PROP,"TrUe");
-        configuration = new EnvironmentEtcdConfiguration();
+        configuration = new EnvironmentEtcdConfig();
         assertThat(configuration.isWatching()).isTrue();
     }
 }

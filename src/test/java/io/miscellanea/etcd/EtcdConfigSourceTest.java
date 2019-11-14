@@ -13,6 +13,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit test suite for {@code EtcdConfigSource}.
+ */
 class EtcdConfigSourceTest {
     // Constants
     private static final String TEST_KEY = "this.known.property";
@@ -22,14 +25,13 @@ class EtcdConfigSourceTest {
     @Test
     @DisplayName("ConfigSource throws on null KvStoreClient")
     void testExceptionOnNullKvStoreClient() {
-        EtcdConfiguration loader = mock(EtcdConfiguration.class);
+        EtcdConfig loader = mock(EtcdConfig.class);
         when(loader.getHost()).thenReturn("localhost");
         when(loader.getPort()).thenReturn(4001);
 
         Throwable exception = assertThrows(IllegalArgumentException.class, () ->
                 new EtcdConfigSource(loader,null));
 
-        assertThat(exception).isExactlyInstanceOf(IllegalArgumentException.class);
         assertThat(exception.getMessage()).contains("kvClient")
                 .contains("must not")
                 .contains("null");
@@ -69,7 +71,7 @@ class EtcdConfigSourceTest {
         KvStoreClient storeClient = mock(KvStoreClient.class);
         when(storeClient.getKvClient()).thenReturn(client);
 
-        EtcdConfiguration loader = mock(EtcdConfiguration.class);
+        EtcdConfig loader = mock(EtcdConfig.class);
         when(loader.getHost()).thenReturn("localhost");
         when(loader.getPort()).thenReturn(4001);
 
@@ -97,7 +99,7 @@ class EtcdConfigSourceTest {
         KvStoreClient storeClient = mock(KvStoreClient.class);
         when(storeClient.getKvClient()).thenReturn(client);
 
-        EtcdConfiguration loader = mock(EtcdConfiguration.class);
+        EtcdConfig loader = mock(EtcdConfig.class);
         when(loader.getHost()).thenReturn("localhost");
         when(loader.getPort()).thenReturn(4001);
 

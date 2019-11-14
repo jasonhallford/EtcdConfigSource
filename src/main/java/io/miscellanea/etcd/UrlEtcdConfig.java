@@ -55,15 +55,15 @@ class UrlEtcdConfig implements EtcdConfig {
     // EtcdConfig
     @Override
     public String getHost() {
-        return this.props.getProperty(Constants.ETCD_HOST_PROP);
+        return this.props.getProperty(Constants.HOST_PROP);
     }
 
     @Override
     public Integer getPort() {
         Integer port = null;
 
-        if(this.props.containsKey(Constants.ETCD_PORT_PROP)){
-            String strPort = this.props.getProperty(Constants.ETCD_PORT_PROP);
+        if(this.props.containsKey(Constants.PORT_PROP)){
+            String strPort = this.props.getProperty(Constants.PORT_PROP);
             try{
                 port = Integer.parseInt(strPort);
             } catch (Exception e){
@@ -76,23 +76,23 @@ class UrlEtcdConfig implements EtcdConfig {
 
     @Override
     public String getUser() {
-        return this.props.getProperty(Constants.ETCD_USER_PROP);
+        return this.props.getProperty(Constants.USER_PROP);
     }
 
     @Override
     public String getPassword() {
-        return this.props.getProperty(Constants.ETCD_PASSWORD_PROP);
+        return this.props.getProperty(Constants.PASSWORD_PROP);
     }
 
     @Override
     public Boolean isWatching() {
         Boolean watching = null;
 
-        if(this.props.containsKey(Constants.ETCD_WATCHING_PROP) &&
-                !Strings.isNullOrEmpty(this.props.getProperty(Constants.ETCD_WATCHING_PROP))){
-            watching = Boolean.parseBoolean(this.props.getProperty(Constants.ETCD_WATCHING_PROP));
+        if(this.props.containsKey(Constants.WATCHING_PROP) &&
+                !Strings.isNullOrEmpty(this.props.getProperty(Constants.WATCHING_PROP))){
+            watching = Boolean.parseBoolean(this.props.getProperty(Constants.WATCHING_PROP));
 
-            LOGGER.debug("Converted ''{}'' to ''{}''.",this.props.getProperty(Constants.ETCD_WATCHING_PROP), watching);
+            LOGGER.debug("Converted ''{}'' to ''{}''.",this.props.getProperty(Constants.WATCHING_PROP), watching);
         }
 
         return watching;

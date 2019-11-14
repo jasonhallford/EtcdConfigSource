@@ -23,11 +23,11 @@ class EnvironmentEtcdConfig implements EtcdConfig {
 
     // Constructors
     public EnvironmentEtcdConfig() {
-        this.host = System.getProperty(Constants.ETCD_HOST_PROP);
+        this.host = System.getProperty(Constants.HOST_PROP);
         this.port = this.resolvePort();
         this.watching = this.resolveWatching();
-        this.user = System.getProperty(Constants.ETCD_USER_PROP);
-        this.password = System.getProperty(Constants.ETCD_PASSWORD_PROP);
+        this.user = System.getProperty(Constants.USER_PROP);
+        this.password = System.getProperty(Constants.PASSWORD_PROP);
         this.ordinal = this.resolveOrdinal();
 
         LOGGER.debug("etcd host = {}, etcd port = {}, etcd user = {}, etcd password = {}", this.host, this.port, this.user, password);
@@ -65,7 +65,7 @@ class EnvironmentEtcdConfig implements EtcdConfig {
     // Private methods
     private Integer resolvePort() {
         Integer port = null;
-        String strPort = System.getProperty(Constants.ETCD_PORT_PROP);
+        String strPort = System.getProperty(Constants.PORT_PROP);
 
         if (!Strings.isNullOrEmpty(strPort)) {
             try {
@@ -74,7 +74,7 @@ class EnvironmentEtcdConfig implements EtcdConfig {
                 LOGGER.warn("Unable to convert configured value to an integer ({}); using default value ({}).", e.getMessage(), port);
             }
         } else {
-            LOGGER.info("Property {} is not defined.", Constants.ETCD_PORT_PROP);
+            LOGGER.info("Property {} is not defined.", Constants.PORT_PROP);
         }
 
         return port;
@@ -100,7 +100,7 @@ class EnvironmentEtcdConfig implements EtcdConfig {
     private Boolean resolveWatching() {
         Boolean doWatch = null;
 
-        String strWatch = ConfigResolver.getPropertyValue(Constants.ETCD_WATCHING_PROP);
+        String strWatch = ConfigResolver.getPropertyValue(Constants.WATCHING_PROP);
         if (!Strings.isNullOrEmpty(strWatch)) {
             doWatch = Boolean.parseBoolean(strWatch);
         } else {

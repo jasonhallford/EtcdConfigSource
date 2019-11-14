@@ -6,7 +6,6 @@ import com.google.protobuf.ByteString;
 import com.ibm.etcd.client.EtcdClient;
 import com.ibm.etcd.client.KvStoreClient;
 import com.ibm.etcd.client.kv.KvClient;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,9 +26,9 @@ class EtcdConfigSourceIT {
     // Tests
     @BeforeAll
     static void initializeTests() throws Exception {
-        System.setProperty(Constants.ETCD_HOST_PROP, ETCD_HOST);
-        System.setProperty(Constants.ETCD_PORT_PROP, ETCD_PORT);
-        System.setProperty(Constants.ETCD_WATCHING_PROP, "");
+        System.setProperty(Constants.HOST_PROP, ETCD_HOST);
+        System.setProperty(Constants.PORT_PROP, ETCD_PORT);
+        System.setProperty(Constants.WATCHING_PROP, "");
     }
 
 
@@ -58,8 +57,8 @@ class EtcdConfigSourceIT {
     @Test
     @DisplayName("Read a Configuration Value without Username or Password")
     void readConfigurationValueWithoutUsernameOrPassword() throws Exception {
-        System.setProperty(Constants.ETCD_USER_PROP, "");
-        System.setProperty(Constants.ETCD_PASSWORD_PROP, "");
+        System.setProperty(Constants.USER_PROP, "");
+        System.setProperty(Constants.PASSWORD_PROP, "");
 
         try (EtcdConfigSource source = new EtcdConfigSource()) {
             String value = source.getPropertyValue(TEST_KEY);
@@ -70,8 +69,8 @@ class EtcdConfigSourceIT {
     @Test
     @DisplayName("Read a Configuration Value")
     void readConfigurationValue() throws Exception {
-        System.setProperty(Constants.ETCD_USER_PROP, ETCD_USER);
-        System.setProperty(Constants.ETCD_PASSWORD_PROP, ETCD_PASSWORD);
+        System.setProperty(Constants.USER_PROP, ETCD_USER);
+        System.setProperty(Constants.PASSWORD_PROP, ETCD_PASSWORD);
 
         this.setKeyValue(TEST_KEY,TEST_VALUE);
 
@@ -85,9 +84,9 @@ class EtcdConfigSourceIT {
     @Test
     @DisplayName("Read Changed Configuration Value")
     void readChangedConfigurationValue() throws Exception {
-        System.setProperty(Constants.ETCD_USER_PROP, ETCD_USER);
-        System.setProperty(Constants.ETCD_PASSWORD_PROP, ETCD_PASSWORD);
-        System.setProperty(Constants.ETCD_WATCHING_PROP, "true");
+        System.setProperty(Constants.USER_PROP, ETCD_USER);
+        System.setProperty(Constants.PASSWORD_PROP, ETCD_PASSWORD);
+        System.setProperty(Constants.WATCHING_PROP, "true");
 
         this.setKeyValue(TEST_KEY,TEST_VALUE);
 
@@ -110,8 +109,8 @@ class EtcdConfigSourceIT {
     @Test
     @DisplayName("Ignore Changed Configuration Value")
     void ignoreChangedConfigurationValue() throws Exception {
-        System.setProperty(Constants.ETCD_USER_PROP, ETCD_USER);
-        System.setProperty(Constants.ETCD_PASSWORD_PROP, ETCD_PASSWORD);
+        System.setProperty(Constants.USER_PROP, ETCD_USER);
+        System.setProperty(Constants.PASSWORD_PROP, ETCD_PASSWORD);
 
         this.setKeyValue(TEST_KEY,TEST_VALUE);
 

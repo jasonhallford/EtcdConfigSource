@@ -12,11 +12,12 @@ public class EnvironmentEtcdConfigTest {
     @Test
     @DisplayName("All Values Read from System Properties")
     void allValuesReadFromSystemProperties(){
-        System.setProperty(Constants.ETCD_USER_PROP,"myUser");
-        System.setProperty(Constants.ETCD_PASSWORD_PROP,"myPassword");
-        System.setProperty(Constants.ETCD_HOST_PROP,"myHost");
-        System.setProperty(Constants.ETCD_PORT_PROP,"9999");
-        System.setProperty(Constants.ETCD_WATCHING_PROP,"true");
+        System.setProperty(Constants.USER_PROP,"myUser");
+        System.setProperty(Constants.PASSWORD_PROP,"myPassword");
+        System.setProperty(Constants.HOST_PROP,"myHost");
+        System.setProperty(Constants.PORT_PROP,"9999");
+        System.setProperty(Constants.WATCHING_PROP,"true");
+        System.setProperty(Constants.ORDINAL_PROP,"10000");
 
         EtcdConfig configuration = new EnvironmentEtcdConfig();
 
@@ -25,24 +26,25 @@ public class EnvironmentEtcdConfigTest {
         assertThat(configuration.getUser()).isNotNull().isEqualTo("myUser");
         assertThat(configuration.getPassword()).isNotNull().isEqualTo("myPassword");
         assertThat(configuration.isWatching()).isTrue();
+        assertThat(configuration.getOrdinal()).isEqualTo(10000);
     }
 
     @Test
     @DisplayName("IsWatching Can be Null and False")
     void isWatchingCanBeNullAndFalse(){
-        System.setProperty(Constants.ETCD_WATCHING_PROP,"");
+        System.setProperty(Constants.WATCHING_PROP,"");
         EtcdConfig configuration = new EnvironmentEtcdConfig();
         assertThat(configuration.isWatching()).isNull();
 
-        System.setProperty(Constants.ETCD_WATCHING_PROP,"false");
+        System.setProperty(Constants.WATCHING_PROP,"false");
         configuration = new EnvironmentEtcdConfig();
         assertThat(configuration.isWatching()).isFalse();
 
-        System.setProperty(Constants.ETCD_WATCHING_PROP,"nonsense value");
+        System.setProperty(Constants.WATCHING_PROP,"nonsense value");
         configuration = new EnvironmentEtcdConfig();
         assertThat(configuration.isWatching()).isFalse();
 
-        System.setProperty(Constants.ETCD_WATCHING_PROP,"TrUe");
+        System.setProperty(Constants.WATCHING_PROP,"TrUe");
         configuration = new EnvironmentEtcdConfig();
         assertThat(configuration.isWatching()).isTrue();
     }

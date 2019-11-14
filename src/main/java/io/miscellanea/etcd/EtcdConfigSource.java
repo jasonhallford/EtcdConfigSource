@@ -206,34 +206,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     // ConfigSource
     @Override
     public int getOrdinal() {
-        if (this.ordinal == 0) {
-            try {
-                String strOrdinal = ConfigResolver.getPropertyValue(ORDINAL_PROP);
-
-                if (!Strings.isNullOrEmpty(strOrdinal)) {
-                    try {
-                        this.ordinal = Integer.parseInt(strOrdinal);
-                    } catch (Exception e) {
-                        LOGGER.warn("Unable to convert ordinal '{}' to an integer; using default value {}.", strOrdinal,
-                                Constants.DEFAULT_ORDINAL);
-                    }
-                } else {
-                    LOGGER.info("Ordinal property {} not set; using default value {}.", ORDINAL_PROP,
-                            Constants.DEFAULT_ORDINAL);
-                }
-            } catch (Exception e) {
-                LOGGER.info("Unable to resolve ordinal property '{}'; using default value {}.", ORDINAL_PROP,
-                        Constants.DEFAULT_ORDINAL);
-            }
-        }
-
-        if (this.ordinal == 0) {
-            this.ordinal = Constants.DEFAULT_ORDINAL;
-        }
-
-        LOGGER.debug("Configuration source is using ordinal value '{}'.", this.ordinal);
-
-        return this.ordinal;
+        return this.etcdConfig.getOrdinal();
     }
 
     @Override

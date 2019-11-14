@@ -26,9 +26,9 @@ class CompositeEtcdConfig implements EtcdConfig {
         LOGGER.debug("Adding default environment configuration.");
         configs.add(new EnvironmentEtcdConfig());
 
-        if(!Strings.isNullOrEmpty(System.getProperty(Constants.ETCD_CONFIG_URL_PROP))){
+        if(!Strings.isNullOrEmpty(System.getProperty(Constants.CONFIG_URL_PROP))){
             try{
-                URL url = new URL(System.getProperty(Constants.ETCD_CONFIG_URL_PROP));
+                URL url = new URL(System.getProperty(Constants.CONFIG_URL_PROP));
                 LOGGER.debug("Adding URL configuration for {}.",url.toString());
                 configs.add(new UrlEtcdConfig(url));
             } catch (MalformedURLException e) {

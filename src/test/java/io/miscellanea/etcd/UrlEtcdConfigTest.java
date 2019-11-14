@@ -38,5 +38,6 @@ public class UrlEtcdConfigTest {
         assertThat(config.getPort()).isEqualTo(4001);
         assertThat(config.getUser()).isEqualTo("root");
         assertThat(config.getPassword()).isEqualTo("Passw0rd");
+        assertThat(config.getOrdinal()).isEqualTo(9999);
     }
 }

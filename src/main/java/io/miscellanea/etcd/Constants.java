@@ -8,7 +8,7 @@ final class Constants {
     public static final String PASSWORD_PROP = "etcd.endpoint.password";
     public static final String ORDINAL_PROP = "etcd.cs.ordinal";
     public static final String WATCHING_PROP = "etcd.cs.watch";
-    public static final String CONFIG_URL_PROP = "etc.cs.configUrl";
+    public static final String CONFIG_URL_PROP = "etcd.cs.configUrl";
 
     // Default values
     public static final Integer DEFAULT_PORT = 2379;

@@ -6,7 +6,7 @@
 
     <groupId>io.miscellanea</groupId>
     <artifactId>EtcdConfigSource</artifactId>
-    <version>0.7</version>
+    <version>0.8</version>
 
     <profiles>
         <profile>

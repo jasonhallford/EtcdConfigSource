@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -72,6 +73,11 @@ class UrlEtcdConfig implements EtcdConfig {
         }
 
         return port;
+    }
+
+    @Override
+    public List<String> getClusterMembers() {
+        return null;
     }
 
     @Override

@@ -10,7 +10,6 @@ import com.ibm.etcd.client.KvStoreClient;
 import com.ibm.etcd.client.kv.KvClient;
 import com.ibm.etcd.client.kv.WatchUpdate;
 import io.grpc.stub.StreamObserver;
-import org.apache.deltaspike.core.api.config.ConfigResolver;
 import org.apache.deltaspike.core.spi.config.ConfigSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An Apache DeltaSpike <code>ConfigSource</code> implementation for etcd.
+ * An Apache DeltaSpike <code>ConfigSource</code> implementation for etcd. It
+ * is configured in one of two ways:
+ *
+ *
+ * Both methods may be combined, in which case parameters read from system properties
+ * override those from the file.
  *
  * @author Jason Hallford
  */
@@ -67,7 +71,6 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
 
     // Constants
     private static final String SOURCE_NAME = "Etcd Config Source";
-    private static final String ORDINAL_PROP = "etcd.cs.ordinal";
 
     // Fields
     private static final Logger LOGGER = LoggerFactory.getLogger(EtcdConfigSource.class);
@@ -92,23 +95,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
      * </ul>
      */
     public EtcdConfigSource() {
-        if (this.etcdConfig.getHost() != null && (this.etcdConfig.getPort() != 0)) {
-            if (Strings.isNullOrEmpty(this.etcdConfig.getUser()) ||
-                    Strings.isNullOrEmpty(this.etcdConfig.getPassword())) {
-                LOGGER.debug("Creating etcd KV store client without credentials.");
-                this.kvStoreClient = EtcdClient.forEndpoint(this.etcdConfig.getHost(), this.etcdConfig.getPort())
-                        .withPlainText()
-                        .build();
-            } else {
-                LOGGER.debug("Creating etcd KV store client with credentials.");
-                this.kvStoreClient = EtcdClient.forEndpoint(this.etcdConfig.getHost(), this.etcdConfig.getPort())
-                        .withCredentials(this.etcdConfig.getUser(), this.etcdConfig.getPassword())
-                        .withPlainText()
-                        .build();
-            }
-        } else {
-            LOGGER.warn("Unable to load valid host and port configuration; config source is disabled.");
-        }
+        this.kvStoreClient = Utils.buildKvStoreClient(this.etcdConfig);
     }
 
     /**

@@ -83,6 +83,25 @@ class CompositeEtcdConfig implements EtcdConfig {
     }
 
     @Override
+    public List<String> getClusterMembers() {
+        List<String> members = null;
+
+        for (EtcdConfig config : this.configs) {
+            members = config.getClusterMembers();
+            if(members != null){
+                break;
+            }
+        }
+
+        if(members == null){
+            LOGGER.debug("Cluster members are not defined; expecting individual host and port.");
+            members = new ArrayList<>();
+        }
+
+        return members;
+    }
+
+    @Override
     public String getUser() {
         String user = null;
 

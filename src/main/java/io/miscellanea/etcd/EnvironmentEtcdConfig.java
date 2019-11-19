@@ -5,6 +5,8 @@ import org.apache.deltaspike.core.api.config.ConfigResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * Manages the configuration source's own, internal configuration.
  *
@@ -20,11 +22,13 @@ class EnvironmentEtcdConfig implements EtcdConfig {
     private String password;
     private Boolean watching;
     private Integer ordinal;
+    private List<String> members;
 
     // Constructors
     public EnvironmentEtcdConfig() {
         this.host = System.getProperty(Constants.HOST_PROP);
         this.port = this.resolvePort();
+        this.members = this.resolveClusterMembers();
         this.watching = this.resolveWatching();
         this.user = System.getProperty(Constants.USER_PROP);
         this.password = System.getProperty(Constants.PASSWORD_PROP);
@@ -45,6 +49,11 @@ class EnvironmentEtcdConfig implements EtcdConfig {
     }
 
     @Override
+    public List<String> getClusterMembers() {
+        return members;
+    }
+
+    @Override
     public String getUser() {
         return user;
     }
@@ -60,7 +69,9 @@ class EnvironmentEtcdConfig implements EtcdConfig {
     }
 
     @Override
-    public Integer getOrdinal() { return ordinal; }
+    public Integer getOrdinal() {
+        return ordinal;
+    }
 
     // Private methods
     private Integer resolvePort() {
@@ -97,6 +108,17 @@ class EnvironmentEtcdConfig implements EtcdConfig {
         return ordinal;
     }
 
+    private List<String> resolveClusterMembers() {
+        String members = System.getProperty(Constants.MEMBERS_PROP);
+
+        List<String> memberList = null;
+        if (members != null) {
+            memberList = Utils.parseMembers(members);
+        }
+
+        return memberList;
+    }
+
     private Boolean resolveWatching() {
         Boolean doWatch = null;
 
@@ -104,10 +126,10 @@ class EnvironmentEtcdConfig implements EtcdConfig {
         if (!Strings.isNullOrEmpty(strWatch)) {
             doWatch = Boolean.parseBoolean(strWatch);
         } else {
-            LOGGER.debug("Property {} is not defined.");
+            LOGGER.debug("Property {} is not defined.", Constants.WATCHING_PROP);
         }
 
-        LOGGER.info("doWatch = {}",doWatch);
+        LOGGER.info("doWatch = {}", doWatch);
 
         return doWatch;
     }

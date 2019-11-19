@@ -1,5 +1,7 @@
 package io.miscellanea.etcd;
 
+import java.util.List;
+
 /**
  * Interface implemented by classes that load {@code EtcdConfigSource}'s internal
  * configuration.
@@ -21,6 +23,14 @@ interface EtcdConfig {
      * @return The TCP port or {@code null} if not defined.
      */
     Integer getPort();
+
+    /**
+     * Gets the list of endpoints for an etcd cluster. This property
+     * overrides {@code host} and {@code port} if provided separately.
+     *
+     * @return The list of cluster members.
+     */
+    List<String> getClusterMembers();
 
     /**
      * Gets the user name to send to etcd for authentication.

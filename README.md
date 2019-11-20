@@ -47,6 +47,8 @@ The configuration source makes use of parameters to control runtime behavior. Th
  etcd.endpoint.password | String | The etcd user's password. Must be omitted if authentication is not required.
  etcd.endpoint.port | Integer | The etcd server's TCP port. Defaults to <span style="font-family: monospace">2379</span> if omitted.
  etcd.endpoint.user | String | The name used to authenticate with the etcd server. Must be omitted if authentication in not required.
+ javax.net.ssl.trustStore | String | The absolute path to a java keystore containing the etcd server's TLS certificate. This property and <span style="font-family: monospace">javax.net.ssl.trustStorePassword</span> are required for TLS-enabled endpoints.
+ javax.net.ssl.trustStorePassword | String | The trust store's password. This property and <span style="font-family: monospace">javax.net.ssl.trustStore</span> are required for TLS-enabled endpoints.
  
  Parameters may be specified on the command line *and* in a properties file. In that case, command line parameters take precedence, overriding any conflicting
  values in the file.

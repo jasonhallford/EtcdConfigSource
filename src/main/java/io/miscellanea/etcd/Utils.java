@@ -19,10 +19,11 @@ class Utils {
     private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
 
     // Constructors
+
     /**
      * Ensures this class can't be instantiated.
      */
-    private Utils(){
+    private Utils() {
 
     }
 
@@ -35,14 +36,14 @@ class Utils {
      * @param members A comma-separated list of cluster members.
      * @return The tokenized member list.
      */
-    public static List<String> parseMembers(String members){
+    public static List<String> parseMembers(String members) {
         List<String> memberList = new ArrayList<>();
 
-        if(!Strings.isNullOrEmpty(members)){
+        if (!Strings.isNullOrEmpty(members)) {
             String[] splitMembers = members.split(",");
-            for(String member : splitMembers){
+            for (String member : splitMembers) {
                 memberList.add(member);
-                LOGGER.debug("Adding member {} to list.",member);
+                LOGGER.debug("Adding member {} to list.", member);
             }
         }
 
@@ -56,13 +57,13 @@ class Utils {
      * @param config The etcd configuration.
      * @return A configured {@code KvStoreClient} instance.
      */
-    public static KvStoreClient buildKvStoreClient(EtcdConfig config){
+    public static KvStoreClient buildKvStoreClient(EtcdConfig config) {
         KvStoreClient client = null;
 
-        if (config.getHost() != null || (config.getClusterMembers().size() > 0 )) {
+        if (config.getHost() != null || (config.getClusterMembers().size() > 0)) {
             EtcdClient.Builder builder = null;
 
-            if( config.getClusterMembers() != null && config.getClusterMembers().size() > 0){
+            if (config.getClusterMembers() != null && config.getClusterMembers().size() > 0) {
                 builder = EtcdClient.forEndpoints(config.getClusterMembers());
             } else {
                 builder = EtcdClient.forEndpoint(config.getHost(), config.getPort());
@@ -71,10 +72,11 @@ class Utils {
             if (!Strings.isNullOrEmpty(config.getUser()) &&
                     !Strings.isNullOrEmpty(config.getPassword())) {
                 LOGGER.debug("Creating etcd KV store client with credentials.");
-                builder = builder.withCredentials(config.getUser(), config.getPassword());
+                builder = builder.withCredentials(config.getUser(), config.getPassword())
+                        .withImmediateAuth();
             }
 
-            client = builder.withPlainText().build();
+            client = builder.build();
         } else {
             LOGGER.warn("Unable to load valid host and port configuration; config source is disabled.");
         }

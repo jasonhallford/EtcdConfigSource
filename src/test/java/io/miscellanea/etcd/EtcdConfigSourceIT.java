@@ -110,7 +110,7 @@ class EtcdConfigSourceIT {
             this.setEtcdKeyValue(TEST_KEY, CHANGED_TEST_VALUE);
 
             // Sleep for 5 seconds; watches are process asynchronously
-            Thread.sleep(5000);
+            Thread.sleep(1000);
 
             value = source.getPropertyValue(TEST_KEY);
             assertThat(value).isNotNull()
@@ -131,7 +131,7 @@ class EtcdConfigSourceIT {
             this.setEtcdKeyValue(TEST_KEY, CHANGED_TEST_VALUE);
 
             // Sleep for 5 seconds; watches are process asynchronously
-            Thread.sleep(5000);
+            Thread.sleep(1000);
 
             value = source.getPropertyValue(TEST_KEY);
             assertThat(value).isNotNull()

@@ -1,11 +1,9 @@
 package io.miscellanea.etcd;
 
-import com.google.common.base.Strings;
 import com.google.protobuf.ByteString;
 import com.ibm.etcd.api.Event;
 import com.ibm.etcd.api.KeyValue;
 import com.ibm.etcd.api.RangeResponse;
-import com.ibm.etcd.client.EtcdClient;
 import com.ibm.etcd.client.KvStoreClient;
 import com.ibm.etcd.client.kv.KvClient;
 import com.ibm.etcd.client.kv.WatchUpdate;
@@ -19,12 +17,42 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ *
  * An Apache DeltaSpike <code>ConfigSource</code> implementation for etcd. It
  * is configured in one of two ways:
- *
- *
- * Both methods may be combined, in which case parameters read from system properties
- * override those from the file.
+ * <ol>
+ *     <li>By providing system properties on the command line (e.g. "-Dproperty=value")</li>
+ *     <li>By providing the same properties in a file accessible via a URL</li>
+ * </ol>
+ * <p></p>
+ * Both methods may be combined, in which case arguments specified as system properties
+ * override those from the file. This class recognizes the following properties:
+ * <ul>
+ *     <li><strong>etcd.cs.configUrl</strong>: The URL for a .properties file containing
+ *       the other properties listed in this table. For example, to reference a file named
+ *       myEtcd.properties in /var/lib/etcd/ you'd use the URL
+ *       file://var/lib/etcd/myEtcd.properties.</li>
+ *     <li><strong>etcd.cs.ordinal</strong>: The ordinal used to determine the configuration
+ *       source's priority order. Defaults to 1000 if omitted. Please see the DeltaSpike
+ *       configuration mechanism page for more information.</li>
+ *     <li><strong>etcd.cs.watch</strong>: If true, then the configuration source will dynamically
+ *       reload previously read etcd keys should they change. If false (the default), then each
+ *       key's value is only read once.</li>
+ *     <li><strong>etcd.endpoint.host</strong>: The etcd host's DNS name or IP address. This
+ *       property does not support https endpoints.</li>
+ *     <li><strong>etcd.endpoint.members</strong>: A comma-separated list of etcd cluter members
+ *       (e.g. "http://localhost:2379,http://localhost:2389"). When present, this property causes
+ *       the config source to ignore <strong>etcd.endpoint.host</strong> and
+ *       <strong>etcd.endpoint.port</strong>. Specifying a single-member list may be used as an
+ *       alternative to these properties that works with either http or https endpoints.</li>
+ *     <li><strong>etcd.endpoint.password</strong>: The etcd user's password. Must be omitted if
+ *       authentication is not required.</li>
+ *     <li><strong>etcd.endpoint.port</strong>: The etcd server's TCP port; used in combination
+ *       with <strong>etcd.endpoint.host</strong>. Defaults to 2379 if omitted.</li>
+ *     <li><strong>etcd.endpoint.user</strong>: The name used to authenticate with the etcd server.
+ *       Must be omitted if authentication in not required.</li>
+ * </ul>
+ * <p></p>
  *
  * @author Jason Hallford
  */
@@ -213,7 +241,6 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
                     ByteString etcdKey = ByteString.copyFromUtf8(key);
 
                     RangeResponse response = client.get(etcdKey).sync();
-
                     if (response.getCount() > 0) {
                         value = response.getKvs(0).getValue().toStringUtf8();
 

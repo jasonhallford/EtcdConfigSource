@@ -65,6 +65,10 @@ class Utils {
 
             if (config.getClusterMembers() != null && config.getClusterMembers().size() > 0) {
                 builder = EtcdClient.forEndpoints(config.getClusterMembers());
+
+                if(config.getClusterMembers().stream().anyMatch(it -> it.contains("http:"))){
+                    builder = builder.withPlainText();
+                }
             } else {
                 builder = EtcdClient.forEndpoint(config.getHost(), config.getPort());
             }

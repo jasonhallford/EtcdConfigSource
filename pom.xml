@@ -12,6 +12,18 @@
     <description>An Apache DeltaSpike configuration source for etcd.</description>
     <url>https://github.com/jasonhallford/EtcdConfigSource</url>
 
+    <developers>
+        <developer>
+            <id>jasonhallford</id>
+            <name>Jason Hallford</name>
+            <email>jason.hallford@gmail.com</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>America/Los_Angeles</timezone>
+        </developer>
+    </developers>
+
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>

@@ -64,13 +64,18 @@ class Utils {
             EtcdClient.Builder builder = null;
 
             if (config.getClusterMembers() != null && config.getClusterMembers().size() > 0) {
+                LOGGER.debug("Building cluster-aware client.");
                 builder = EtcdClient.forEndpoints(config.getClusterMembers());
 
-                if(config.getClusterMembers().stream().anyMatch(it -> it.contains("http:"))){
+                if (config.getClusterMembers().stream().anyMatch(it -> it.contains("http:"))) {
+                    LOGGER.debug("Using plain-text: cluster is not TLS-enabled.");
                     builder = builder.withPlainText();
                 }
             } else {
-                builder = EtcdClient.forEndpoint(config.getHost(), config.getPort());
+                LOGGER.debug("Building connection to single HTTP endpoint at http://{}:{}.",
+                        config.getHost(), config.getPort());
+                builder = EtcdClient.forEndpoint(config.getHost(), config.getPort())
+                        .withPlainText();
             }
 
             if (!Strings.isNullOrEmpty(config.getUser()) &&

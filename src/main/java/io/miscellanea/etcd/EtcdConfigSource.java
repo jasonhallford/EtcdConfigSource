@@ -123,7 +123,9 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
      * </ul>
      */
     public EtcdConfigSource() {
+        LOGGER.info("Initializing EtcdConfigSource");
         this.kvStoreClient = Utils.buildKvStoreClient(this.etcdConfig);
+        LOGGER.info("EtcdConfigSource successfully initialized");
     }
 
     /**
@@ -170,6 +172,7 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
         synchronized (this.valueCache) {
             this.valueCache.put(key, value);
         }
+        LOGGER.debug("Caching value '{}' for key '{}'.", value,key);
     }
 
     private String readCachedValue(String key) {
@@ -221,11 +224,13 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
     // ConfigSource
     @Override
     public int getOrdinal() {
+        LOGGER.debug("Returning ordinal {}",this.etcdConfig.getOrdinal());
         return this.etcdConfig.getOrdinal();
     }
 
     @Override
     public Map<String, String> getProperties() {
+        LOGGER.warn("Request made for properties list: this feature is not supported.");
         return new HashMap<>();
     }
 
@@ -237,17 +242,21 @@ public class EtcdConfigSource implements ConfigSource, AutoCloseable {
             try {
                 value = this.readCachedValue(key);
                 if (value == null) {
+                    LOGGER.debug("The value for key '{}' is not cached; calling etcd.",key);
                     KvClient client = this.kvStoreClient.getKvClient();
                     ByteString etcdKey = ByteString.copyFromUtf8(key);
 
                     RangeResponse response = client.get(etcdKey).sync();
                     if (response.getCount() > 0) {
                         value = response.getKvs(0).getValue().toStringUtf8();
+                        LOGGER.debug("etcd returned value '{}' for key '{}'",value,key);
 
                         if (value != null) {
                             this.cacheValue(key, value);
                             this.addWatch(client, etcdKey);
                         }
+                    } else {
+                        LOGGER.debug("'{}' does not have a value in the key space.", key);
                     }
                 } else {
                     LOGGER.debug("Read value from cache.");

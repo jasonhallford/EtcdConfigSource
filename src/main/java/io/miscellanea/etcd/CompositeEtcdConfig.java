@@ -96,6 +96,11 @@ class CompositeEtcdConfig implements EtcdConfig {
         if(members == null){
             LOGGER.debug("Cluster members are not defined; expecting individual host and port.");
             members = new ArrayList<>();
+        } else if(LOGGER.isDebugEnabled()){
+            LOGGER.debug("etcd cluster members:");
+            for(String member : members){
+                LOGGER.debug("  " + member);
+            }
         }
 
         return members;

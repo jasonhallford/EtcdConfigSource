@@ -122,7 +122,7 @@ class EnvironmentEtcdConfig implements EtcdConfig {
     private Boolean resolveWatching() {
         Boolean doWatch = null;
 
-        String strWatch = ConfigResolver.getPropertyValue(Constants.WATCHING_PROP);
+        String strWatch = System.getProperty(Constants.WATCHING_PROP);
         if (!Strings.isNullOrEmpty(strWatch)) {
             doWatch = Boolean.parseBoolean(strWatch);
         } else {

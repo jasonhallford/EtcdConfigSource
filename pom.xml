@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.miscellanea.etcd</groupId>
     <artifactId>EtcdConfigSource</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>etcd Configuration Source</name>
@@ -120,7 +120,7 @@
 
         <!-- Dependency versions -->
         <deltaspike.version>1.9.1</deltaspike.version>
-        <etcd-java.version>0.0.13</etcd-java.version>
+        <etcd-java.version>0.0.14</etcd-java.version>
         <junit.version>5.5.2</junit.version>
         <assertj.version>3.14.0</assertj.version>
         <mockito.version>3.1.0</mockito.version>

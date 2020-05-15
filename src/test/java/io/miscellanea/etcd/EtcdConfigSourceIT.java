@@ -25,6 +25,7 @@ class EtcdConfigSourceIT {
     private static String etcdHost;
     private static String etcdPort;
     private static String etcdMembers;
+    private static String etcdKeyPrefix;
 
     // Test setup
     @BeforeAll
@@ -34,6 +35,7 @@ class EtcdConfigSourceIT {
         etcdHost = System.getProperty(Constants.HOST_PROP);
         etcdPort = System.getProperty(Constants.PORT_PROP);
         etcdMembers = System.getProperty(Constants.MEMBERS_PROP);
+        etcdKeyPrefix = System.getProperty(Constants.KEY_PREFIX);
     }
 
     @BeforeEach
@@ -43,6 +45,7 @@ class EtcdConfigSourceIT {
         this.setProperty(Constants.HOST_PROP, etcdHost);
         this.setProperty(Constants.PORT_PROP, etcdPort);
         this.setProperty(Constants.MEMBERS_PROP, etcdMembers);
+        this.setProperty(Constants.KEY_PREFIX,etcdKeyPrefix);
         this.setProperty(Constants.WATCHING_PROP, "");
     }
 
@@ -149,7 +152,7 @@ class EtcdConfigSourceIT {
     private void setEtcdKeyValue(String key, String value) {
         try (KvStoreClient kvStoreClient = Utils.buildKvStoreClient(new EnvironmentEtcdConfig())) {
             KvClient client = kvStoreClient.getKvClient();
-            client.put(ByteString.copyFromUtf8(key), ByteString.copyFromUtf8(value)).sync();
+            client.put(ByteString.copyFromUtf8(etcdKeyPrefix+key), ByteString.copyFromUtf8(value)).sync();
         } catch (Exception e) {
             fail("Unable to set value '" + value + "' for key '" + key + "'. Reason: " + e.getMessage());
         }

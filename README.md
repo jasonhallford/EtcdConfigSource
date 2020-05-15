@@ -40,6 +40,7 @@ The configuration source makes use of parameters to control runtime behavior. Th
  Property  | Type | Description
  --------- | ---- | -----------
  etcd.cs.configUrl | String | The URL for a .properties file containing the other properties listed in this table. For example, to reference a file named <span style="font-family: monospace">myEtcd.properties</span> in <span style="font-family: monospace">/var/lib/etcd/</span> you'd use the URL <span style="font-family: monospace">file://var/lib/etcd/myEtcd.properties</span>.
+ etcd.cs.keyPrefix | String | An optional prefix to prepend to a key before performin a lookup in the key space. This permits property injection to use a stable name that may be customized via configuration on a per-execution environment basis.
  etcd.cs.ordinal | Integer | The ordinal used to determine the configuration source's priority order. Defaults to 1000 if omitted. Please see the DeltaSpike [configuration mechanism](https://deltaspike.apache.org/documentation/configuration.html) page for more information.
  etcd.cs.watch | Boolean | If <span style="font-family: monospace">true</span>, then the configuration source will dynamically reload previously read etcd keys should they change. If <span style="font-family: monospace">false</span> (the default), then each key's value is only read once. 
  etcd.endpoint.host | String | The etcd host's DNS name or IP address.
